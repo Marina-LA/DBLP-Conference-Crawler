@@ -290,5 +290,4 @@ class BaseCrawler:
         else: conf2 = conf
             
         pattern = rf"https://dblp.org/db/conf/{conf}/{conf2}\d{{4}}\.html"
-        
         return bool(re.match(pattern, link))
