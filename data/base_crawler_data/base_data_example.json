@@ -1,0 +1,35 @@
+{
+    "20XX": [
+        {
+            "Title": "The title here",
+            "Year": "20XX",
+            "DOI Number": "10.1111/12345.12345",
+            "OpenAlex Link": "https://api.openalex.org/works/", 
+            "Authors and Institutions": [
+                {
+                    "Author": "Author Name 1",
+                    "Institutions": [
+                        {
+                            "Institution Name": "Institution Name here",
+                            "Country": "Country Code ISO-2 here"
+                        }
+                    ]
+                },
+                {
+                    "Author": "Author Name 2",
+                    "Institutions": [
+                        {
+                            "Institution Name": "Institution Name here",
+                            "Country": "Country Code ISO-2 here"
+                        }
+                    ]
+                }
+            ],
+            "Referenced Works": [
+                "W1234567890",
+                "W1234567890",
+                "W1234567890"
+            ]
+        }
+    ]
+}

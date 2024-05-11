@@ -1,0 +1,90 @@
+{
+    "Title Paper Citing 1": [
+        {
+            "Title": "Title Cited Paper 1",
+            "Authors": [
+                {
+                    "Author": "Author Name 1",
+                    "Institutions": [
+                        {
+                            "Institution Name": "Institution Name here",
+                            "Country": "Country Code ISO-2 here"
+                        }
+                    ]
+                },
+                {
+                    "Author": "Author Name 2",
+                    "Institutions": [
+                        {
+                            "Institution Name": "Institution Name here",
+                            "Country": "Country Code ISO-2 here"
+                        }
+                    ]
+                }
+            ],
+            "Venue": "Venue Name here",
+            "Year": 1234
+        },
+        {
+            "Title": "Title Cited Paper 2",
+            "Authors": [
+                {
+                    "Author": "Author Name 1",
+                    "Institutions": [
+                        {
+                            "Institution Name": "Institution Name here",
+                            "Country": "Country Code ISO-2 here"
+                        }
+                    ]
+                },
+                {
+                    "Author": "Author Name 2",
+                    "Institutions": [
+                        {
+                            "Institution Name": "Institution Name here",
+                            "Country": "Country Code ISO-2 here"
+                        }
+                    ]
+                },
+                {
+                    "Author": "Author Name 3",
+                    "Institutions": [
+                        {
+                            "Institution Name": "Institution Name here",
+                            "Country": "Country Code ISO-2 here"
+                        }
+                    ]
+                }
+            ],
+            "Venue": "Venue Name here",
+            "Year": 1234
+        } 
+    ],
+    "Title Paper Citing 2": [
+        {
+            "Title": "Title Cited Paper 1",
+            "Authors": [
+                {
+                    "Author": "Author Name 1",
+                    "Institutions": [
+                        {
+                            "Institution Name": "Institution Name here",
+                            "Country": "Country Code ISO-2 here"
+                        }
+                    ]
+                },
+                {
+                    "Author": "Author Name 2",
+                    "Institutions": [
+                        {
+                            "Institution Name": "Institution Name here",
+                            "Country": "Country Code ISO-2 here"
+                        }
+                    ]
+                }
+            ],
+            "Venue": "Venue Name here",
+            "Year": 1234
+        }
+    ]
+}
