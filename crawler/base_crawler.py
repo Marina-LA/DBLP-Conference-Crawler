@@ -1,5 +1,4 @@
 import time
-import os
 import threading
 from auxiliar import file, thread
 from bs4 import BeautifulSoup

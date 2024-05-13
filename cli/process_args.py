@@ -31,24 +31,26 @@ def process():
     if len(args.y) == 1:
         args.y.append(args.y[0])
 
-    # --c
+    # --c argument
     if len(args.c) < 1:
         sys.exit("Error: The --c argument must have at least one value")
     
-    # --t
+    # --t argument
     if args.t is None:
         num_threads = 1
     else:
+        if args.t < 1:
+            sys.exit("Error: The --t argument must be greater than 0")
         num_threads = args.t
 
-    # --no_key
+    # --no_key argument
     if args.no_key:
         api_key = None
         num_threads = 1
     else:
         api_key = file.api_key_in_env()
 
-
+    # crawler selection
     if args.extended:
         if api_key is None and not args.no_key:
             sys.exit("Error: You must provide a Semantic Scholar API key to use the extended crawler or use the --no_key flag to use the crawler without an API key")
