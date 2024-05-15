@@ -25,7 +25,7 @@ This crawler is composed of three different crawlers, each of which extracts dif
 You can install the required libraries for the project using the following command.
 
 ```console
-pip install -r requirements
+pip install -r requirements.txt
 ```
 
 # :running: How to execute the crawler?

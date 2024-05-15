@@ -10,8 +10,8 @@ def save_json(file_path, data):
     
 
 def load_json(file_path):
-    file_path = f'{file_path}.json'
-    if os.path.exists(file_path):
+    if exists_file(file_path):
+        file_path = f'{file_path}.json'
         with open(file_path, 'r', encoding='utf-8') as f:
             data = json.load(f)
             return data
