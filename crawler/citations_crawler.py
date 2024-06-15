@@ -27,8 +27,9 @@ class CitationsCrawler(BaseCrawler):
             global all_citation_data
             all_citation_data = {}
 
-            if file.exists_file(f"./data/extended_crawler_data/{conf}_extended_data"):
-                extended_data = file.load_json(f"./data/extended_crawler_data/{conf}_extended_data")
+            data_dir = f"./data/extended_crawler_data/{conf}_extended_data"
+            if file.exists_file(data_dir):
+                extended_data = file.load_json(data_dir)
             else:
                 sys.exit(f"Error: The extended data for the conference {conf} does not exist. Please run the extended crawler first.")
                 
@@ -37,8 +38,7 @@ class CitationsCrawler(BaseCrawler):
             threads = thread.Thread(self.num_threads)
             threads.run(self._search_citations_data, (extended_data, first_year, last_year))
 
-            data_size = len(papers_data)
-            threads.run(self._get_citation_data, (papers_data, 0, data_size))
+            threads.run(self._get_citation_data, (papers_data, 0, len(papers_data)))
             
             file.save_json(f"{self.output_dir}/{conf}_extended_data", all_citation_data)
 
@@ -101,14 +101,8 @@ class CitationsCrawler(BaseCrawler):
             if response == []: continue
 
             for cited_paper in response:
-                if type(cited_paper) is list:
-                    for c in cited_paper:
-                        #i += 1
-                        data = self._get_cited_paper_data(c)
-                        cited_data.append(data)
-                else:
-                    #i += 1
-                    data = self._get_cited_paper_data(cited_paper)
+                for c in cited_paper:
+                    data = self._get_cited_paper_data(c)
                     cited_data.append(data)
             
             self.semaphore_oa.acquire()

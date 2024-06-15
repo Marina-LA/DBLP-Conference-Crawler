@@ -65,7 +65,7 @@ You can also use the crawler without an API key, but it should be noted that the
 - ``--extended``   A flag indicating whether to use the extended crawler.
 - ``--t``   This serves to indicate the number of threads to be created for crawling the data concurrently. It should be taken into account along with the request limit. If not specified, by default, only one thread is used.
 - ``--no_key``  A flag indicating whether to perform crawling without using the Semantic Scholar API KEY. It is not recommended to use this option, as the request limit can easily be exceeded. If this option is activated, crawling will always be done with only one thread, even if more are specified with the --t argument.
-- ``--citattions``     A flag indicating whether to use the citations crawler.
+- ``--citations``     A flag indicating whether to use the citations crawler.
 
 The arguments ``--c`` and ``--y`` must be provided mandatory. The arguments ``--extended`` and ``--citations`` only indicate which crawler to use. If neither of the above two parameters is specified, the **base crawler** will be used as default.
 

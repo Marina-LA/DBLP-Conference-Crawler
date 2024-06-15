@@ -20,10 +20,15 @@ class ExtendedCrawler(BaseCrawler):
             global data_per_year
             data_per_year = {}
 
-            if file.exists_file(f"./data/base_crawler_data/{conf}_basic_data"):
-                basic_data = file.load_json(f"./data/base_crawler_data/{conf}_basic_data")
+            data_dir = f"./data/base_crawler_data/{conf}_basic_data"
+            if file.exists_file(data_dir):
+                basic_data = file.load_json(data_dir)
             else:
                 sys.exit(f"Error: The basic data for the conference {conf} does not exist. Please run the base crawler first.")
+            
+            for year in range(first_year, last_year + 1):
+                if not file.year_exists_in_file(year, data_per_year):
+                    logging.info(f"(EXTENDED) - {year} data not found.")
                 
             threads = thread.Thread(self.num_threads)
             threads.run(self._get_paper_data, (basic_data, first_year, last_year))
@@ -54,6 +59,7 @@ class ExtendedCrawler(BaseCrawler):
                 paper_pub_year = elem['Year']
                 paper_openalex_link = elem['OpenAlex Link']
                 authors_institutions = elem['Authors and Institutions']
+                referenced_works = elem['OpenAlex Referenced Works']
 
                 s2_data = self._get_s2_paper_data(paper_title, paper_doi_num)
                 paper_id, abstract, tldr, embedding, citations_s2, doi_s2 = s2_data if s2_data is not None else (None, None, None, None, None, None)
@@ -61,8 +67,6 @@ class ExtendedCrawler(BaseCrawler):
                 if doi_s2 is not None and paper_openalex_link is None:
                     openalex_data = super()._get_openalex_data(f"https://api.openalex.org/works/https://doi.org/{doi_s2}")
                     paper_doi_num, authors_institutions, referenced_works = openalex_data if openalex_data is not None else (None, None, None)
-                else:
-                    referenced_works = None
 
                 paper_data.append ({
                     'Title': paper_title,

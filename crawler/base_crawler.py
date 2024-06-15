@@ -283,6 +283,7 @@ class BaseCrawler:
 
 
     def _filter_dblp_links(self, conf, link):
+        """ Filters the dblp obtained links to match only the base conference"""
         # socc is the only conference that has a different name in the link
         # remebmer to add more conferences if needed
         if conf == "cloud": conf2 = "socc"
