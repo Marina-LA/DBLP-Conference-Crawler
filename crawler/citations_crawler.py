@@ -40,7 +40,7 @@ class CitationsCrawler(BaseCrawler):
 
             threads.run(self._get_citation_data, (papers_data, 0, len(papers_data)))
             
-            file.save_json(f"{self.output_dir}/{conf}_extended_data", all_citation_data)
+            file.save_json(f"{self.output_dir}/{conf}_citations_data", all_citation_data)
 
         final_time = time.time()
         minutes = (final_time - initial_time) / 60

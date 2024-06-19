@@ -19,10 +19,7 @@ def load_json(file_path):
         return None
 
 
-def year_exists_in_file(file_path, year):
-    if not exists_file(file_path):
-        return False
-    data = load_json(file_path)
+def year_exists_in_file(year, data):
     if str(year) in data:
         return True
     return False
