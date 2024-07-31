@@ -10,17 +10,19 @@ data_per_year = {}
 
 
 class BaseCrawler:
-    def __init__(self, conferences, years, num_threads, output_dir):
+    def __init__(self, conferences, years, num_threads, output_dir, filter=None):
         self.conferences = conferences
         self.years = years
         self.num_threads = num_threads
         self.output_dir = output_dir
+        self.filter = filter
         self.semaphore = threading.Semaphore(1)
     
     def crawl(self):
         initial_time = time.time()
         first_year, last_year = self.years
         for conf in self.conferences:
+            print(f"(BASE) - Searching {conf} from {first_year} to {last_year}...")
             global data_per_year
             data_per_year = {}
                 
@@ -53,8 +55,9 @@ class BaseCrawler:
             pub_list_raw = self._get_pub_list(link)
             for pub in pub_list_raw:
                 article_items = pub.find_all('li', {'itemtype': 'http://schema.org/ScholarlyArticle'})
-                header = pub.find_previous('h2')
-                if self._filter_section(header.text):
+                header_h2 = pub.find_previous('h2')
+                header_h3 = pub.find_previous('h3')
+                if self._filter_section(header_h2, header_h3):
                     continue
                 for child in article_items:
                     pub_data = self._get_dblp_paper_data(child)
@@ -68,6 +71,7 @@ class BaseCrawler:
                     self.semaphore.acquire()
                     data_per_year[pub_data['Year']].append(pub_data)
                     self.semaphore.release()
+                
 
 
 
@@ -144,7 +148,15 @@ class BaseCrawler:
             if 'publ' in class_of_content_item:
                 links = content_item.contents[0].findAll("a")
                 openalex_link = [l.get("href") for l in links if "openalex" in l.get("href")]
-                doi_number, authors_institutions, referenced_works = self._get_openalex_data(openalex_link[0]) if openalex_link != [] else (None, None, None)
+                openalex_data = None
+                if openalex_link != []:
+                    openalex_data = self._get_openalex_data(openalex_link[0])
+                
+                if openalex_data is not None:
+                    doi_number, authors_institutions, referenced_works = openalex_data
+                else:
+                    doi_number, authors_institutions, referenced_works = None, None, None 
+                
 
             if authors_institutions is None:
                 auth_list = []
@@ -249,7 +261,7 @@ class BaseCrawler:
     
 
 
-    def _filter_section(self, header):
+    def _filter_section(self, header_h2, header_h3):
         """Filter the articles that are not relevant to the search.
 
         Args:
@@ -258,9 +270,22 @@ class BaseCrawler:
         Returns:
             boolean: True if this secction was to be skipped, False otherwise
         """    
-        lower_header = header.lower().replace('\n', '')
-        non_relevant_sections = ["workshop", "tutorial", "keynote", "panel", "poster", "demo", "doctoral", "posters", "short papers", "demos"]
-        if any(section in lower_header for section in non_relevant_sections):
+
+        non_relevant_sections = ["workshop", "tutorial", "keynote", "panel", "poster",
+                                 "demo", "doctoral", "posters", "short papers", "demos", "short paper", "tutorials", 
+                                 "demonstration", "PhD Symposium"]
+        
+        header_h2_text = header_h2.text if header_h2 is not None else ""
+        header_h3_text = header_h3.text if header_h3 is not None else ""
+        lower_header_h2 = header_h2_text.lower().replace('\n', '')
+        lower_header_h3 = header_h3_text.lower().replace('\n', '')
+
+        if self.filter is not None:
+            non_relevant_sections = non_relevant_sections + self.filter
+
+        if any(section in lower_header_h2 for section in non_relevant_sections):
+            return True
+        if any(section in lower_header_h3 for section in non_relevant_sections):
             return True
         return False
     
@@ -275,7 +300,7 @@ class BaseCrawler:
             boolean:True if the paper is valid, False otherwise
         """    
 
-        pattern = r'^(Demo:|Poster:|Welcome Message)'
+        pattern = r'^(Demo:|Poster:|Welcome Message|Poster Paper:|Demo Paper:)'
         coincidence = re.match(pattern, title)
 
         return bool(coincidence)

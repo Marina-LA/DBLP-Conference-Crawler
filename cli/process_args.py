@@ -20,6 +20,7 @@ def process():
     parser.add_argument('--no_key', nargs='?', const='default_value', help='Flag to indicate if we want to use the crawler without a Semantic Scholar API key')
     parser.add_argument('--citations', nargs='?', const='default_value', help='Flag to indicate if we want to use the citations crawler')
     parser.add_argument('--o', type=str, nargs='?', const='default_value', help='Output directory for the data')
+    parser.add_argument('--filter', type=str, nargs='+', help='(Base Crawler) Filter to apply to the papers, if we want to filter the sections (e.g. poster/demos/keynotes/etc.)')
 
     args = parser.parse_args()
 
@@ -50,6 +51,14 @@ def process():
     else:
         api_key = file.api_key_in_env()
 
+    # --filter argument
+    if args.filter:
+        # add the user filter to the filter list
+        filter = args.filter
+    else:
+        # use the default filter implemented in the base crawler
+        filter = None
+
     # crawler selection
     if args.extended:
         if api_key is None and not args.no_key:
@@ -72,5 +81,5 @@ def process():
             output_dir = args.o
         else:
             output_dir = './data/base_crawler_data/'
-        base = base_crawler.BaseCrawler(args.c, args.y, num_threads=num_threads, output_dir=output_dir)
+        base = base_crawler.BaseCrawler(args.c, args.y, num_threads=num_threads, output_dir=output_dir, filter=filter)
         base.crawl()
