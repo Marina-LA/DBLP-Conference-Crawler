@@ -196,7 +196,7 @@ class ExtendedCrawler(BaseCrawler):
     
 
 
-    def _make_request_with_retries(self, url, params, retries=2, initial_sleep=1, backoff_factor=5):
+    def _make_request_with_retries(self, url, params, retries=2, initial_sleep=2, backoff_factor=5):
         """Function that makes a request to an API and returns the response data. Used in the _get_paper_s2_data_request function.
 
         Args:
