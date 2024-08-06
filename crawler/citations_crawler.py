@@ -39,6 +39,9 @@ class CitationsCrawler(BaseCrawler):
             threads = thread.Thread(self.num_threads)
             threads.run(self._search_citations_data, (extended_data, first_year, last_year))
 
+            print(f"(CITATIONS) - Finished searching for citations in Semantic Scholar API.")
+            print(f"(CITATIONS) - Crawling data from OpenAlex API...")
+
             threads.run(self._get_citation_data, (papers_data, 0, len(papers_data)))
             
             file.save_json(f"{self.output_dir}/{conf}_citations_data", all_citation_data)
@@ -82,7 +85,7 @@ class CitationsCrawler(BaseCrawler):
                 r = requests.post(url_s2,
                     params={'fields': 'title,year,venue,externalIds,authors.name'},
                     json={"ids": c})
-                time.sleep(1.25)
+                time.sleep(2)
                 if r.status_code == 200:
                     responses.append(r.json())
                 else:
@@ -138,6 +141,8 @@ class CitationsCrawler(BaseCrawler):
             auth = cited_paper["authors"]
             for a in auth:
                 authors.append({"Author": a["name"], "Institutions": None})
+        
+        time.sleep(0.5)
 
         return {"Title": title, "Authors": authors, "Venue": venue, "Year": year}
     
