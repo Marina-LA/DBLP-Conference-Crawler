@@ -66,6 +66,8 @@ class ExtendedCrawler(BaseCrawler):
                 paper_openalex_link = elem['OpenAlex Link']
                 authors_institutions = elem['Authors and Institutions']
                 referenced_works = elem['OpenAlex Referenced Works']
+
+                #print(f"(EXTENDED) - Getting data for {paper_title} ({year})")
                 
                 s2_data = self._get_s2_paper_data(paper_title, paper_doi_num, authors_institutions, paper_title)
 
@@ -231,7 +233,7 @@ class ExtendedCrawler(BaseCrawler):
 
     def _verify_paper(self, paper_data, dblp_authors, paper_title):
         if paper_data is not None:
-            s2_year = paper_data['Year']
+            #s2_year = paper_data['Year']
             s2_num_authors = len(paper_data['Authors'])
             dblp_num_authors = len(dblp_authors)
             s2_authors_names = [author['name'] for author in paper_data['Authors']]
