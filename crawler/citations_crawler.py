@@ -22,6 +22,7 @@ class CitationsCrawler(BaseCrawler):
         initial_time = time.time()
         first_year, last_year = self.years
         for conf in self.conferences:
+            print(f"(CITATIONS) - Crawling citations data for the conference {conf}...")
             global papers_data
             papers_data = []
             global all_citation_data
