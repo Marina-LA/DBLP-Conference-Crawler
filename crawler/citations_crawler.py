@@ -11,11 +11,13 @@ all_citation_data = {}
 papers_data = []
 all_papers_id = {}
 
+
 class CitationsCrawler(BaseCrawler):
     def __init__(self, conferences, years, num_threads, output_dir):
         super().__init__(conferences, years, num_threads, output_dir)
         self.semaphore_s2 = threading.Semaphore(1)
         self.semaphore_oa = threading.Semaphore(1)
+
 
 
     def crawl(self):
@@ -37,12 +39,29 @@ class CitationsCrawler(BaseCrawler):
             self._get_all_paper_data(self.conferences)
 
             threads = thread.Thread(self.num_threads)
-            threads.run(self._search_citations_data, (extended_data, first_year, last_year))
 
-            print(f"(CITATIONS) - Finished searching for citations in Semantic Scholar API.")
-            print(f"(CITATIONS) - Crawling data from OpenAlex API...")
+            # SEMANTIC SCHOLAR API
 
-            threads.run(self._get_citation_data, (papers_data, 0, len(papers_data)))
+            # if you want to use threads do not comment the following lines
+            # be aware that using threads for the Semantic Scholar API may cause some requests to fail
+            # threads.run(self._search_citations_data, (extended_data, first_year, last_year))
+
+            # comment the following line if you want to use threads
+            self._search_citations_data(extended_data, first_year, last_year)
+
+            # save the data obtained from the Semantic Scholar API (intermediate data)
+            file.save_json(f"{self.output_dir}/intermediate_data_s2/{conf}_citations_s2", papers_data)
+
+            # OPENALEX API
+
+            # check if there is intermediate data
+            intermediate_data_dir = f"{self.output_dir}/intermediate_data_s2/{conf}_citations_s2"
+            if file.exists_file(intermediate_data_dir):
+                intermediate_data = file.load_json(intermediate_data_dir)
+            else:
+                sys.exit(f"Error: The intermediate data for the conference {conf} does not exist. Please run the citations crawler again.")
+
+            threads.run(self._get_citation_data, (intermediate_data, 0, len(intermediate_data)))
             
             file.save_json(f"{self.output_dir}/{conf}_citations_data", all_citation_data)
 
@@ -70,44 +89,45 @@ class CitationsCrawler(BaseCrawler):
         self._batch_request_s2(papers)
 
 
+
     def _batch_request_s2(self, papers):
         url_s2 = "https://api.semanticscholar.org/graph/v1/paper/batch"
         #print("Making requests to Semantic Scholar API...")
         for title, citations in papers.items():
             responses = []
-            citations_len = len(citations)
-            num_iterations = citations_len // 500
-            rest = num_iterations + 1 if citations_len % 500 > 0 else num_iterations
-            for j in range(rest):
-                ini = j * 500
-                fin = min((j + 1) * 500, citations_len)
-                c = citations[ini:fin]
-                r = requests.post(url_s2,
-                    params={'fields': 'title,year,venue,externalIds,authors.name'},
-                    json={"ids": c})
-                time.sleep(2)
-                if r.status_code == 200:
-                    responses.append(r.json())
-                else:
-                    logging.error(f"(CITATIONS) - {r.status_code} in request for paper {title}")
+            if len(citations) > 0:
+                citations_len = len(citations)
+                num_iterations = citations_len // 500
+                rest = num_iterations + 1 if citations_len % 500 > 0 else num_iterations
+                for j in range(rest):
+                    ini = j * 500
+                    fin = min((j + 1) * 500, citations_len)
+                    c = citations[ini:fin]
+                    r = self._make_request_with_retries(url_s2, c)
+                    if r.status_code == 200:
+                        for paper in r.json():
+                            responses.append(paper)
+                    else:
+                        logging.error(f"(CITATIONS) - {r.status_code} in request for paper {title}")
+                time.sleep(0.75)
 
-            self.semaphore_s2.acquire()
+            # do not comment the semaphore lines if you are using threads
+            # self.semaphore_s2.acquire
             papers_data.append({"Title": title, "Response": responses})
-            self.semaphore_s2.release()
+            # self.semaphore_s2.release()
+
 
 
     def _get_citation_data(self, data, start, end):
-        #i = 0
         for elem in data[start:end]:
             cited_data = []
             main_paper_title = elem.get("Title", None)
             response = elem.get("Response", None)
-            if response == []: continue
+            if response == [] or response is None: continue
 
             for cited_paper in response:
-                for c in cited_paper:
-                    data = self._get_cited_paper_data(c)
-                    cited_data.append(data)
+                data = self._get_cited_paper_data(cited_paper)
+                cited_data.append(data)
             
             self.semaphore_oa.acquire()
             all_citation_data[main_paper_title] = cited_data
@@ -146,6 +166,7 @@ class CitationsCrawler(BaseCrawler):
 
         return {"Title": title, "Authors": authors, "Venue": venue, "Year": year}
     
+
 
     def _get_openalex_data(self, openalex_link):
         """Function that extracts the authors and institutions data and the referenced works from the OpenAlex API.
@@ -196,6 +217,7 @@ class CitationsCrawler(BaseCrawler):
         
         return auth_data
 
+
     
     def _get_all_paper_data(self, conferences):  
         for conf in conferences:
@@ -203,3 +225,36 @@ class CitationsCrawler(BaseCrawler):
             for year, paper in data.items():
                 for p in paper:
                     all_papers_id[p["S2 Paper ID"]] = {"Paper": p, "Conference": conf}
+
+
+
+    def _make_request_with_retries(self, url, c,  retries=2, initial_sleep=2.0, backoff_factor=5.0):
+        """Function that makes a request to an API and returns the response data. Used in the _get_paper_s2_data_request function.
+
+        Args:
+            url (string): the URL of the API.
+            params (dict): the parameters for the request.
+            retries (int, optional): number of retries. Defaults to 2.
+            initial_sleep (int, optional): initial sleep time. Defaults to 1.
+            backoff_factor (int, optional): backoff factor. Defaults to 5.
+
+        Returns:
+            response object: the response data.
+        """
+
+        for attempt in range(retries+1):
+            response = requests.post(url,
+                        params={'fields': 'title,year,venue,externalIds,authors.name'},
+                        json={"ids": c})
+
+            # if the response is successful, return it
+            if response.status_code == 200:
+                return response
+            # if the response is 429 or 504, sleep and try
+            elif response.status_code == 429 or response.status_code == 504:
+                print("Sleeping...")
+                time.sleep((initial_sleep + attempt) * backoff_factor)
+                print("Retrying...")
+            else: # if the response is not successful, return None
+                break
+        return response
